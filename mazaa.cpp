@@ -1110,76 +1110,69 @@ pec['*']['I']=pec['+']['I']=pec['+']['*']=pec['$']['I']=pec['$']['*']=pec['$']['
 }
 
 shhhhhhiffffffffft reduce    
-
 #include<bits/stdc++.h>
 using namespace std;
-char pec[256][256]={0};
+/*SHIFT REDUCE PARSER FOR FOLLOWING GRAMMAR
+E->2E2
+E->3E3
+E->4
+*/
+string LHS[]={"E","E","E"};
+string RHS[]={"22E","33E","4"};
+void print(queue<char> q){
+    while(q.size()){
+        cout<<q.front();
+        q.pop();
+    }
+    cout<<"\t\t";
+}
 int main(){
-pec['I']['*']=pec['I']['+']=pec['I']['$']=pec['*']['*']=pec['*']['+']=pec['*']['$']=pec['+']['+']=pec['+']['$']='>';
-pec['*']['I']=pec['+']['I']=pec['+']['*']=pec['$']['I']=pec['$']['*']=pec['$']['+']='<';
     string ip;
-    cout<<"ENTER THE STRING TO BE PARSED"<<endl;
+    cout<<"Enter the Input String to be parsed"<<endl;
     cin>>ip;
-    string ooo="$";
-    ooo=ooo+ip;
-    ip=ooo+"$";
-    int count=0;
-    for(int i=0;i<ip.length();i++)
-        if(ip[i]=='I')
-            count++;
-    string cur="$";
-    for(int i=1;i<ip.length();i++){
-        cur+=pec[ip[i-1]][ip[i]];
-        cur+=ip[i];
-    }
-    cout<<cur<<endl;
-    size_t found=cur.find("<I>");
-    while(found!=string::npos){
-        cur.replace(found,3,"E");
-        cout<<cur<<endl;
-        found=cur.find("<I>");
-    }
-    found=cur.find("E");
-    while(found!=string::npos){
-        cur.replace(found,1,"");
-        found=cur.find("E");
-    }
-    cout<<cur<<endl;
-    ip=cur;
-     cur="$";
-    for(int i=1;i<ip.length();i++){
-        cur+=pec[ip[i-1]][ip[i]];
-        cur+=ip[i];
-    }
-    cout<<cur<<endl;
-    size_t found2=cur.find("<+>");
-    found=cur.find("<*>");
-    while(found2!=string::npos||found!=string::npos){
-        if(found==string::npos)
-            cur.replace(found2,3,"");
-        else if(found2==string::npos)
-            cur.replace(found,3,"");
-        else{
-            if(found<found2){
-                cur.replace(found,3,"");
+    queue<char> q;
+    for(char x:ip)
+        q.push(x);
+    q.push('$');
+    string Stack="$";
+    cout<<"STACK\tINPUT BUFFER\tPARSING ACTION"<<endl;
+    bool accept=false;
+    while((q.size()>1)||(Stack.length()>=2)){
+        //print output;
+        cout<<Stack<<"\t";
+        print(q);
+        int act=-1;
+        //can i reduce?
+        int rule=-1;
+        for(int i=0;i<3;i++){
+            size_t found=Stack.rfind(RHS[i]);
+            if(found!=string::npos){
+                if(found+RHS[i].length()==Stack.length()){
+                    rule=i;
+                    Stack.replace(found,RHS[i].length(),LHS[i]);
+                    break;
+                }
             }
-            else
-                cur.replace(found2,3,"");
         }
-        ip="";
-        for(int i=0;i<cur.length();i++)
-            if(cur[i]=='*'||cur[i]=='$'||cur[i]=='+')
-                ip=ip+cur[i];
-        cur="$";
-        for(int i=1;i<ip.length();i++){
-            cur+=pec[ip[i-1]][ip[i]];
-            cur+=ip[i];
+        if(rule!=-1){
+            cout<<"REDUCE USING RULE "<<LHS[rule]<<"->"<<RHS[rule]<<endl;
+            continue;
         }
-        cout<<cur<<endl;
-        found=cur.find("<*>");
-        found2=cur.find("<+>");
-    }
+        //can i shift
+        if(q.size()>1){
+            Stack=Stack+q.front();
+            q.pop();
+            cout<<"SHIFT"<<endl;
+            continue;
+        }
+        break;
 
+    }
+    if(Stack=="$E"&&q.size()==1){
+        cout<<"ACCEPT"<<endl;
+    }
+    else{
+        cout<<"ERROR! NOT A VALID EXPRESSION"<<endl;
+    }
     return 0;
 }
-
